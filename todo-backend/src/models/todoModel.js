@@ -1,24 +1,16 @@
-let todos = [
-    { id: 1, text: 'Set up the React frontend', username: 'System' }
-];
+import mongoose from 'mongoose';
 
-export const getAll = () => todos;
-
-export const add = (newTodo) => {
-    todos.push(newTodo);
-    return newTodo;
-};
-
-export const update = (id, text) => {
-    const index = todos.findIndex(t => t.id === id);
-    if (index !== -1) {
-        todos[index].text = text;
-        return todos[index];
+const todoSchema = new mongoose.Schema({
+    text: {
+        type: String,
+        required: true,
+    },
+    username: {
+        type: String,
+        required: true,
     }
-    return null;
-};
+}, {
+    timestamps: true
+});
 
-export const remove = (id) => {
-    todos = todos.filter(t => t.id !== id);
-    return true;
-};
+export default mongoose.model('Todo', todoSchema);

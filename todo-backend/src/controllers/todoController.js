@@ -1,33 +1,44 @@
-import * as TodoModel from '../models/todoModel.js';
+import Todo from '../models/todoModel.js';
 
-export const getTodos = (req, res) => {
-    const todos = TodoModel.getAll();
-    res.json(todos);
-};
-
-export const createTodo = (req, res) => {
-    const newTodo = {
-        id: Date.now(),
-        text: req.body.text,
-        username: req.body.username
-    };
-    const savedTodo = TodoModel.add(newTodo);
-    res.status(201).json(savedTodo);
-};
-
-export const updateTodo = (req, res) => {
-    const id = parseInt(req.params.id);
-    const updatedTodo = TodoModel.update(id, req.body.text);
-    
-    if (updatedTodo) {
-        res.json(updatedTodo);
-    } else {
-        res.status(404).json({ error: 'Todo not found' });
+export const getTodos = async (req, res) => {
+    try {
+        const todos = await Todo.find(); // Fetches all tasks from DB
+        res.json(todos);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
     }
 };
 
-export const deleteTodo = (req, res) => {
-    const id = parseInt(req.params.id);
-    TodoModel.remove(id);
-    res.json({ success: true });
+export const createTodo = async (req, res) => {
+    try {
+        const newTodo = await Todo.create({
+            text: req.body.text,
+            username: req.body.username
+        });
+        res.status(201).json(newTodo);
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+};
+
+export const updateTodo = async (req, res) => {
+    try {
+        const updatedTodo = await Todo.findByIdAndUpdate(
+            req.params.id, 
+            { text: req.body.text }, 
+            { new: true } // Returns the updated document instead of the old one
+        );
+        res.json(updatedTodo);
+    } catch (error) {
+        res.status(404).json({ message: 'Todo not found' });
+    }
+};
+
+export const deleteTodo = async (req, res) => {
+    try {
+        await Todo.findByIdAndDelete(req.params.id);
+        res.json({ success: true, message: 'Task deleted' });
+    } catch (error) {
+        res.status(404).json({ message: 'Todo not found' });
+    }
 };
