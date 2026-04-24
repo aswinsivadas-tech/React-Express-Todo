@@ -3,43 +3,68 @@ import { useNavigate } from 'react-router-dom';
 
 function Auth() {
   const [isLogin, setIsLogin] = useState(true);
-  
-  // Track input values
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [errorMsg, setErrorMsg] = useState(''); // New state for error messages
   
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    // Determine the display name
-    let displayName = 'Guest';
-    if (!isLogin && username.trim() !== '') {
-      displayName = username; // Use username if signing up
-    } else if (email.trim() !== '') {
-      displayName = email.split('@')[0]; // Use the first part of the email if logging in
-    }
+    setErrorMsg(''); // Clear old errors
 
-    // Save the name to the browser's memory
-    localStorage.setItem('taskMasterUser', displayName);
+    // Choose the right URL based on if they are logging in or signing up
+    const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register';
     
-    navigate('/app');
+    // Choose the right data payload
+    const payload = isLogin 
+      ? { email, password } 
+      : { username, email, password };
+
+    try {
+      const response = await fetch(`http://localhost:5000${endpoint}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        // If the backend sends an error (like "Invalid password"), display it!
+        setErrorMsg(data.message);
+        return;
+      }
+
+      // Success! Save the verified username to memory and go to the app
+      localStorage.setItem('taskMasterUser', data.username);
+      navigate('/app');
+      
+    } catch {
+      setErrorMsg("Failed to connect to server. Is the backend running?");
+    }
   };
 
   return (
     <div className="min-h-screen bg-linear-to-br from-indigo-950 via-purple-900 to-slate-900 flex justify-center items-center p-4 font-sans selection:bg-pink-500 selection:text-white">
       <div className="w-full max-w-md bg-white/10 backdrop-blur-xl rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.5)] border border-white/20 p-8 sm:p-10 transition-all duration-500">
         
-        <div className="text-center mb-8">
+        <div className="text-center mb-6">
           <h1 className="text-3xl font-extrabold text-transparent bg-clip-text bg-linear-to-r from-pink-300 via-purple-300 to-indigo-300 tracking-tight">
             {isLogin ? 'Welcome Back' : 'Join Task Master'}
           </h1>
           <p className="text-indigo-200 text-sm mt-2 font-medium">
-            {isLogin ? 'Enter your credentials to access your TODOs.' : 'Create an account to organize your life.'}
+            {isLogin ? 'Enter your credentials to access your universe.' : 'Create an account to organize your life.'}
           </p>
         </div>
+
+        {/* Display backend errors here */}
+        {errorMsg && (
+          <div className="bg-red-500/20 border border-red-500/50 text-red-200 px-4 py-3 rounded-xl mb-6 text-sm font-bold text-center">
+            {errorMsg}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-5">
           {!isLogin && (
@@ -93,7 +118,10 @@ function Auth() {
             {isLogin ? "Don't have an account? " : "Already have an account? "}
             <button 
               type="button"
-              onClick={() => setIsLogin(!isLogin)} 
+              onClick={() => {
+                setIsLogin(!isLogin);
+                setErrorMsg(''); // Clear errors when switching modes
+              }} 
               className="text-pink-400 font-bold hover:text-pink-300 transition-colors bg-transparent border-none cursor-pointer"
             >
               {isLogin ? 'Sign Up' : 'Log In'}

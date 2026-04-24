@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import todoRoutes from './routes/todoRoutes.js';
+import authRoutes from './routes/authRoutes.js';
 
 const app = express();
 
@@ -16,6 +17,8 @@ app.get('/', (req, res) => {
     res.send('Task Master API is running securely with ES6!');
 });
 
+
+app.use('/api/auth', authRoutes);
 app.use('/api/todos', todoRoutes);
 
 export default app;
