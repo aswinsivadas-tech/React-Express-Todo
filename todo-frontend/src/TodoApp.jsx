@@ -1,62 +1,65 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import TodoItem from "./TodoItem";
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios'; 
+import TodoItem from './TodoItem';
 
 function TodoApp() {
   const [todos, setTodos] = useState([]);
-  const [inputText, setInputText] = useState("");
-
-  // Gets the logged-in user from the browser's memory
-  const [currentUser] = useState(
-    localStorage.getItem("taskMasterUser") || "Guest",
-  );
+  const [inputText, setInputText] = useState('');
+  
+  const [currentUser] = useState(localStorage.getItem('taskMasterUser') || 'Guest');
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    localStorage.removeItem("taskMasterUser");
-    navigate("/");
+    localStorage.removeItem('taskMasterUser');
+    navigate('/');
   };
 
+  // --- AXIOS GET ---
   useEffect(() => {
-    fetch("http://localhost:5000/api/todos")
-      .then((res) => res.json())
-      .then((data) => setTodos(data))
-      .catch((err) => console.error("Error fetching data:", err));
+    axios.get('http://localhost:5000/api/todos')
+      .then(res => setTodos(res.data)) // Axios automatically puts your data inside res.data!
+      .catch(err => console.error("Error fetching data:", err));
   }, []);
 
+  // --- AXIOS POST ---
   const handleAddTodo = async (e) => {
     e.preventDefault();
     if (!inputText.trim()) return;
 
-    const response = await fetch("http://localhost:5000/api/todos", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text: inputText, username: currentUser }),
-    });
-
-    const newTodo = await response.json();
-    setTodos([...todos, newTodo]);
-    setInputText("");
+    try {
+      const response = await axios.post('http://localhost:5000/api/todos', { 
+        text: inputText, 
+        username: currentUser 
+      });
+      setTodos([...todos, response.data]);
+      setInputText('');
+    } catch (error) {
+      console.error("Failed to add task", error);
+    }
   };
 
+  // --- AXIOS DELETE ---
   const handleDelete = async (id) => {
-    await fetch(`http://localhost:5000/api/todos/${id}`, { method: "DELETE" });
-    // Updated to use MongoDB's _id
-    setTodos(todos.filter((todo) => todo._id !== id));
+    try {
+      await axios.delete(`http://localhost:5000/api/todos/${id}`);
+      setTodos(todos.filter(todo => todo._id !== id)); 
+    } catch (error) {
+      console.error("Failed to delete task", error);
+    }
   };
 
+  // --- AXIOS PUT ---
   const handleEdit = async (id, newText) => {
-    const response = await fetch(`http://localhost:5000/api/todos/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text: newText }),
-    });
-
-    const updatedTodo = await response.json();
-    // Updated to use MongoDB's _id
-    setTodos(todos.map((todo) => (todo._id === id ? updatedTodo : todo)));
+    try {
+      const response = await axios.put(`http://localhost:5000/api/todos/${id}`, { 
+        text: newText 
+      });
+      setTodos(todos.map(todo => todo._id === id ? response.data : todo));
+    } catch (error) {
+      console.error("Failed to edit task", error);
+    }
   };
-
   return (
     <div className="min-h-screen bg-linear-to-br from-indigo-950 via-purple-900 to-slate-900 flex flex-col items-center py-6 sm:py-12 px-4 sm:px-8 font-sans selection:bg-pink-500 selection:text-white">
       {/* Main Glass App Container */}

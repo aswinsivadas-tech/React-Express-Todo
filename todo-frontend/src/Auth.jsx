@@ -1,61 +1,56 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import axios from "axios"; // <-- Import Axios
 
-function Auth() {
+const Auth = () => {
+  // State variables
   const [isLogin, setIsLogin] = useState(true);
-  const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [errorMsg, setErrorMsg] = useState(''); // New state for error messages
-  
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [errorMsg, setErrorMsg] = useState("");
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setErrorMsg(''); // Clear old errors
+    setErrorMsg("");
 
-    // Choose the right URL based on if they are logging in or signing up
-    const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register';
-    
-    // Choose the right data payload
-    const payload = isLogin 
-      ? { email, password } 
+    const endpoint = isLogin ? "/api/auth/login" : "/api/auth/register";
+    const payload = isLogin
+      ? { email, password }
       : { username, email, password };
 
     try {
-      const response = await fetch(`http://localhost:5000${endpoint}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
+      // Axios POST request
+      const response = await axios.post(
+        `http://localhost:5000${endpoint}`,
+        payload,
+      );
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        // If the backend sends an error (like "Invalid password"), display it!
-        setErrorMsg(data.message);
-        return;
+      // Success!
+      localStorage.setItem("taskMasterUser", response.data.username);
+      navigate("/app");
+    } catch (error) {
+      // Axios puts the backend error message neatly inside error.response.data
+      if (error.response && error.response.data) {
+        setErrorMsg(error.response.data.message);
+      } else {
+        setErrorMsg("Failed to connect to server. Is the backend running?");
       }
-
-      // Success! Save the verified username to memory and go to the app
-      localStorage.setItem('taskMasterUser', data.username);
-      navigate('/app');
-      
-    } catch {
-      setErrorMsg("Failed to connect to server. Is the backend running?");
     }
   };
 
   return (
     <div className="min-h-screen bg-linear-to-br from-indigo-950 via-purple-900 to-slate-900 flex justify-center items-center p-4 font-sans selection:bg-pink-500 selection:text-white">
       <div className="w-full max-w-md bg-white/10 backdrop-blur-xl rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.5)] border border-white/20 p-8 sm:p-10 transition-all duration-500">
-        
         <div className="text-center mb-6">
           <h1 className="text-3xl font-extrabold text-transparent bg-clip-text bg-linear-to-r from-pink-300 via-purple-300 to-indigo-300 tracking-tight">
-            {isLogin ? 'Welcome Back' : 'Join Task Master'}
+            {isLogin ? "Welcome Back" : "Join Task Master"}
           </h1>
           <p className="text-indigo-200 text-sm mt-2 font-medium">
-            {isLogin ? 'Enter your credentials to access your universe.' : 'Create an account to organize your life.'}
+            {isLogin
+              ? "Enter your credentials to access your TODOS."
+              : "Create an account to organize your life."}
           </p>
         </div>
 
@@ -69,10 +64,12 @@ function Auth() {
         <form onSubmit={handleSubmit} className="space-y-5">
           {!isLogin && (
             <div>
-              <label className="block text-indigo-200 text-xs font-bold mb-2 uppercase tracking-wide">Username</label>
-              <input 
-                type="text" 
-                required 
+              <label className="block text-indigo-200 text-xs font-bold mb-2 uppercase tracking-wide">
+                Username
+              </label>
+              <input
+                type="text"
+                required
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 className="w-full bg-white/5 border border-white/10 text-white px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500/50 transition-all"
@@ -80,24 +77,28 @@ function Auth() {
               />
             </div>
           )}
-          
+
           <div>
-            <label className="block text-indigo-200 text-xs font-bold mb-2 uppercase tracking-wide">Email</label>
-            <input 
-              type="email" 
-              required 
+            <label className="block text-indigo-200 text-xs font-bold mb-2 uppercase tracking-wide">
+              Email
+            </label>
+            <input
+              type="email"
+              required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="w-full bg-white/5 border border-white/10 text-white px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500/50 transition-all"
-              placeholder="you@universe.com"
+              placeholder="you@Example.com"
             />
           </div>
 
           <div>
-            <label className="block text-indigo-200 text-xs font-bold mb-2 uppercase tracking-wide">Password</label>
-            <input 
-              type="password" 
-              required 
+            <label className="block text-indigo-200 text-xs font-bold mb-2 uppercase tracking-wide">
+              Password
+            </label>
+            <input
+              type="password"
+              required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="w-full bg-white/5 border border-white/10 text-white px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500/50 transition-all"
@@ -105,33 +106,32 @@ function Auth() {
             />
           </div>
 
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             className="w-full mt-6 bg-linear-to-r from-pink-500 to-purple-600 hover:from-pink-400 hover:to-purple-500 text-white px-8 py-3.5 rounded-xl font-bold shadow-lg transform active:scale-95 transition-all duration-200"
           >
-            {isLogin ? 'Log In' : 'Sign Up'}
+            {isLogin ? "Log In" : "Sign Up"}
           </button>
         </form>
 
         <div className="mt-8 text-center">
           <p className="text-indigo-200 text-sm">
             {isLogin ? "Don't have an account? " : "Already have an account? "}
-            <button 
+            <button
               type="button"
               onClick={() => {
                 setIsLogin(!isLogin);
-                setErrorMsg(''); // Clear errors when switching modes
-              }} 
+                setErrorMsg(""); // Clear errors when switching modes
+              }}
               className="text-pink-400 font-bold hover:text-pink-300 transition-colors bg-transparent border-none cursor-pointer"
             >
-              {isLogin ? 'Sign Up' : 'Log In'}
+              {isLogin ? "Sign Up" : "Log In"}
             </button>
           </p>
         </div>
-
       </div>
     </div>
   );
-}
+};
 
 export default Auth;
