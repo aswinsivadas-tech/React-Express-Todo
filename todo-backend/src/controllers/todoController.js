@@ -2,7 +2,13 @@ import Todo from '../models/todoModel.js';
 
 export const getTodos = async (req, res) => {
     try {
-        const todos = await Todo.find(); // Fetches all tasks from DB
+        const userId = req.headers['user-id'];
+
+        if(!userId) {
+            return res.status(400).json({message: "User ID is required"});
+        }
+
+        const todos = await Todo.find({ userId: userId});
         res.json(todos);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -13,7 +19,8 @@ export const createTodo = async (req, res) => {
     try {
         const newTodo = await Todo.create({
             text: req.body.text,
-            username: req.body.username
+            username: req.body.username,
+            userId: req.body.userId
         });
         res.status(201).json(newTodo);
     } catch (error) {

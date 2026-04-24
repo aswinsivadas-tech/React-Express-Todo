@@ -17,7 +17,7 @@ export const register = async (req, res) => {
         const newUser = await User.create({ username, email, password: hashedPassword });
         
         // 4. Send back success (but never send the password back!)
-        res.status(201).json({ username: newUser.username, email: newUser.email });
+        res.status(201).json({ _id: newUser._id, username: newUser.username, email: newUser.email });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -35,7 +35,7 @@ export const login = async (req, res) => {
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) return res.status(400).json({ message: 'Invalid password' });
 
-        res.status(200).json({ username: user.username, email: user.email });
+        res.status(200).json({ _id: user._id, username: user.username, email: user.email });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

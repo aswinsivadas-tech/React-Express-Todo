@@ -8,19 +8,24 @@ function TodoApp() {
   const [inputText, setInputText] = useState('');
   
   const [currentUser] = useState(localStorage.getItem('taskMasterUser') || 'Guest');
+  const[userId] = useState(localStorage.getItem('taskMasterId'));
   const navigate = useNavigate();
 
   const handleLogout = () => {
     localStorage.removeItem('taskMasterUser');
+    localStorage.removeItem('taskMasterId');
     navigate('/');
   };
 
   // --- AXIOS GET ---
   useEffect(() => {
-    axios.get('http://localhost:5000/api/todos')
+    if(!userId) return;
+    axios.get('http://localhost:5000/api/todos',{
+      headers: {'user-id':userId }
+    })
       .then(res => setTodos(res.data)) // Axios automatically puts your data inside res.data!
       .catch(err => console.error("Error fetching data:", err));
-  }, []);
+  }, [userId]);
 
   // --- AXIOS POST ---
   const handleAddTodo = async (e) => {
@@ -30,7 +35,8 @@ function TodoApp() {
     try {
       const response = await axios.post('http://localhost:5000/api/todos', { 
         text: inputText, 
-        username: currentUser 
+        username: currentUser,
+        userId:userId 
       });
       setTodos([...todos, response.data]);
       setInputText('');

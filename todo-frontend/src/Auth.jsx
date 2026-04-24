@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios"; // <-- Import Axios
+import axios from "axios";
 
 const Auth = () => {
   // State variables
@@ -29,6 +29,7 @@ const Auth = () => {
 
       // Success!
       localStorage.setItem("taskMasterUser", response.data.username);
+      localStorage.setItem('taskMasterId', response.data._id);
       navigate("/app");
     } catch (error) {
       // Axios puts the backend error message neatly inside error.response.data
