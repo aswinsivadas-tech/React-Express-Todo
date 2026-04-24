@@ -68,8 +68,8 @@ npm install
 ```
 Create a `.env` file in the `todo-backend` directory and add your MongoDB connection string:
 ```env
-MONGO_URI=mongodb://127.0.0.1:27017
-DB_NAME=taskmaster
+MONGO_URI=YOUR_MOGODB_URL
+DB_NAME=YOUR_DATABASE_NAME
 PORT=5000
 ```
 
