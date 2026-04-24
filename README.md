@@ -56,7 +56,7 @@ react-express-todo/
 
 **1. Clone the repository and install root dependencies:**
 ```bash
-git clone <your-repo-url>
+git clone  https://github.com/aswinsivadas-tech/React-Express-Todo
 cd react-express-todo
 npm install
 ```
